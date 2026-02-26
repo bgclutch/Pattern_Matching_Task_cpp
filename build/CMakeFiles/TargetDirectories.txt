@@ -1,5 +1,0 @@
-/home/bog/Desktop/projects/Pattern_Matching_Task_cpp/build/CMakeFiles/edit_cache.dir
-/home/bog/Desktop/projects/Pattern_Matching_Task_cpp/build/CMakeFiles/rebuild_cache.dir
-/home/bog/Desktop/projects/Pattern_Matching_Task_cpp/build/pattern_matching/CMakeFiles/pattern_matching.dir
-/home/bog/Desktop/projects/Pattern_Matching_Task_cpp/build/pattern_matching/CMakeFiles/edit_cache.dir
-/home/bog/Desktop/projects/Pattern_Matching_Task_cpp/build/pattern_matching/CMakeFiles/rebuild_cache.dir

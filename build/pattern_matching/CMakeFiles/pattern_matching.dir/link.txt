@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -fsanitize=address CMakeFiles/pattern_matching.dir/src/main.cpp.o -o pattern_matching  /usr/lib/x86_64-linux-gnu/libOpenCL.so
