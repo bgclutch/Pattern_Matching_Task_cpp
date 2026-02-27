@@ -15,9 +15,11 @@ std::chrono::nanoseconds CPUTime{0};
 };
 }
 
-namespace ocl_utils {
-size_t getPatterns(const int) noexcept;
+namespace match {
+    static const int DICT_SIZE = 256;
+};
 
+namespace ocl_utils {
 enum class Kernel_Names {
     naive,
     fast

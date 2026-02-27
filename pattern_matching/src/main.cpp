@@ -44,6 +44,7 @@ int main() {
     }
 
     match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
+    patternSoA.findMatches();
 
     std::cout << patternSoA << "\n";
 
