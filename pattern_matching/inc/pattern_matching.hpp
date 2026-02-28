@@ -10,6 +10,7 @@
 namespace match {
 class FlatPatterns {
  private:
+    std::string string_;
     std::string patterns_;
     size_t patternsAmount_;
     std::vector<size_t> lengths_;
@@ -17,7 +18,9 @@ class FlatPatterns {
     std::vector<size_t> matches_;
 
  public:
-    FlatPatterns(const std::vector<std::string>& patterns, const std::vector<size_t>& lengths, size_t& patternsAmount) :
+    FlatPatterns(const std::string& string, const std::vector<std::string>& patterns,
+                 const std::vector<size_t>& lengths, size_t& patternsAmount) :
+        string_{string},
         patterns_{createPatterns(patterns)},
         patternsAmount_(patternsAmount),
         lengths_{lengths},
@@ -73,50 +76,56 @@ class FlatPatterns {
  public:
     void findMatches() {
         for (size_t i = 0; i < patternsAmount_; ++i) {
-            std::string curPattern = patterns_.substr(offsets_[i], lengths_[i]);
-            matches_[i] = matchPatterns(patterns_, curPattern);
-        }
+                std::string curPattern = patterns_.substr(offsets_[i], lengths_[i]);
+                matches_[i] = matchPatterns(string_, curPattern);
+            }
     }
-};
 
-std::vector<int> createShiftTable(const std::string& data) {
-    std::vector<int> table(DICT_SIZE, -1);
-    size_t size = data.size();
+ private:
+    std::vector<size_t> createShiftTable(const std::string& patternData, const size_t patternSize) {
+        std::vector<size_t> table(DICT_SIZE, std::numeric_limits<size_t>::max());
+        auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
 
-    for (size_t i = 0; i < size; ++i)
-        table[data[i]] = i;
+        for (size_t i = 0; i < patternSize; ++i)
+            table[pattern[i]] = patternSize - 1 - i;
 
-    return table;
-}
+        return table;
+    }
 
-size_t matchPatterns(const std::string& string, const std::string& pattern) {
-    std::vector<int> table = createShiftTable(pattern);
-    size_t matches = 0;
-    size_t stringSize = string.size();
-    size_t patternSize = pattern.size();
+    size_t matchPatterns(const std::string& stringData, const std::string& patternData) {
+        size_t stringSize = stringData.size();
+        size_t patternSize = patternData.size();
 
-    for (size_t shift = 0; shift <= (stringSize - patternSize); ) {
-        size_t j = patternSize - 1;
-        for (; j != std::numeric_limits<size_t>::max() && pattern[j] == string[shift + j]; --j) {}
+        if (patternSize > stringSize)
+            return 0;
 
-        if (j < 0) {
-            matches++;
+        std::vector<size_t> table = createShiftTable(patternData, patternSize);
+        size_t matches = 0;
 
-            if (shift + patternSize < stringSize) {
-                size_t followingChar = string[shift + patternSize];
-                shift += patternSize - table[followingChar];
-            } else {
-                shift += 1;
+        auto string = reinterpret_cast<const unsigned char*>(stringData.data());
+        auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
+
+        for (size_t shift = 0; shift <= (stringSize - patternSize); ) {
+            size_t j = patternSize - 1;
+            for (; j != std::numeric_limits<size_t>::max() && pattern[j] == string[shift + j]; --j) {}
+
+            if (j == std::numeric_limits<size_t>::max()) {
+                matches++;
+                if (shift + patternSize < stringSize) {
+                    size_t followingChar = string[shift + patternSize];
+                    shift += patternSize - table[followingChar];
+                } else {
+                    shift += 1;
+                }
+            }
+            else {
+                size_t followingChar = table[string[shift + j]];
+                shift += std::max(1ul, j - followingChar);
             }
         }
-        else {
-            size_t followingChar = table[string[shift + j]];
-            shift += std::max(1ul, j - followingChar);
-        }
+        return matches;
     }
-
-    return matches;
-}
+};
 
 
 inline std::ostream& operator<<(std::ostream& outStream, const match::FlatPatterns& patterns) {

@@ -43,10 +43,10 @@ int main() {
         }
     }
 
-    match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
+    match::FlatPatterns patternSoA(data, patterns, lengths, patternsCount);
     patternSoA.findMatches();
 
-    std::cout << patternSoA << "\n";
+    std::cout << patternSoA;
 
     return EXIT_SUCCESS;
 }
