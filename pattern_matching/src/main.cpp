@@ -27,7 +27,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    std::vector<size_t> lengths(patternsCount);
+    std::vector<cl_uint> lengths(patternsCount);
     std::vector<std::string> patterns(patternsCount);
 
     for (size_t i = 0; i != patternsCount; ++i) {
@@ -43,8 +43,8 @@ int main() {
         }
     }
 
-    match::FlatPatterns patternSoA(data, patterns, lengths, patternsCount);
-    patternSoA.findMatches();
+    match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
+    match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::naive, patternSoA, data);
 
     std::cout << patternSoA;
 

@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <ranges>
+#include <type_traits>
 #include <CL/opencl.hpp>
 
 namespace benchmark {
@@ -26,7 +28,7 @@ enum class Kernel_Names {
 };
 
 class Environment final {
-    private:
+ private:
     cl::Platform platform_;
     cl::Device device_;
     cl::Context context_;
@@ -35,7 +37,7 @@ class Environment final {
     cl::Kernel kernel_;
     Kernel_Names kernel_name_;
 
-    public:
+ public:
     Environment(const std::string& kernel_path, const std::string& kernel_name) {
         platform_    = select_platform();
         device_      = select_device(platform_);
@@ -85,7 +87,7 @@ class Environment final {
         return kernel_name_;
     }
 
-    private:
+ private:
     cl::Platform select_platform() {
         std::vector<cl::Platform> platforms;
         cl::Platform::get(&platforms);
@@ -150,7 +152,18 @@ class Environment final {
     }
 
     Kernel_Names select_kernel_name(const std::string& kernel_name) {
-        return (kernel_name == config::FAST_PATTERN_KERNEL_NAME) ? Kernel_Names::naive : Kernel_Names::fast;
+        return (kernel_name == config::FAST_PATTERN_KERNEL_NAME) ? Kernel_Names::fast : Kernel_Names::naive;
     }
 };
+
+template<typename ContainerType, typename = std::enable_if_t<
+                 std::is_pointer_v<decltype(std::declval<ContainerType>().data())> &&
+                 std::is_standard_layout_v<typename ContainerType::value_type>
+>>cl::Buffer createBuffer(const cl::Context& context, const ContainerType& data) {
+    using DataType = typename ContainerType::value_type;
+    size_t bytes = data.size() * sizeof(DataType);
+    void* hostPtr = const_cast<void*>(static_cast<const void*>(data.data()));
+
+    return cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, bytes, hostPtr);
+}
 } // namespace ocl_utils

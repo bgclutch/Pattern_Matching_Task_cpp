@@ -17,4 +17,5 @@ target_include_directories(pattern_matching PRIVATE
 
 target_sources(pattern_matching PRIVATE
     src/main.cpp
+    src/matching.cpp
 )

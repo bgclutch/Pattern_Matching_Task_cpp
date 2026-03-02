@@ -7,31 +7,33 @@
 #include <limits>
 #include <CL/opencl.hpp>
 
+namespace detail {
+std::vector<cl_uint> createShiftTable(const std::string&, const size_t);
+} // namespace detail
+
 namespace match {
 class FlatPatterns {
  private:
-    std::string string_;
     std::string patterns_;
     size_t patternsAmount_;
-    std::vector<size_t> lengths_;
-    std::vector<size_t> offsets_;
-    std::vector<size_t> matches_;
+    std::vector<cl_uint> lengths_;
+    std::vector<cl_uint> offsets_;
+    std::vector<cl_uint> matches_;
 
  public:
-    FlatPatterns(const std::string& string, const std::vector<std::string>& patterns,
-                 const std::vector<size_t>& lengths, size_t& patternsAmount) :
-        string_{string},
+    FlatPatterns(const std::vector<std::string>& patterns,
+                 const std::vector<cl_uint>& lengths, size_t& patternsAmount) :
         patterns_{createPatterns(patterns)},
         patternsAmount_(patternsAmount),
         lengths_{lengths},
         offsets_{createOffsets(lengths_, patternsAmount_)},
         matches_{createMatches(patternsAmount_)} {}
 
-    std::vector<size_t> getMatches() noexcept{
+    std::vector<cl_uint> getMatchesData() noexcept {
         return matches_;
     }
 
-    const std::vector<size_t> getMatches() const noexcept {
+    const std::vector<cl_uint>& getMatches() const noexcept {
         return matches_;
     }
 
@@ -41,6 +43,30 @@ class FlatPatterns {
 
     size_t getAmount() const {
         return patternsAmount_;
+    }
+
+    size_t getPatternsLen() {
+        return patterns_.size();
+    }
+
+    size_t getPatternsLen() const {
+        return patterns_.size();
+    }
+
+    const std::string& getPatterns() const {
+        return patterns_;
+    }
+
+    const std::vector<cl_uint>& getLengths() const {
+        return lengths_;
+    }
+
+    const std::vector<cl_uint>& getOffsets() const {
+        return offsets_;
+    }
+
+    void setMatches(std::vector<cl_uint>&& matches) {
+        matches_ = std::move(matches);
     }
 
  private:
@@ -53,8 +79,8 @@ class FlatPatterns {
         return data;
     }
 
-    std::vector<size_t> createOffsets(const std::vector<size_t>& length, const size_t size) {
-        std::vector<size_t> offsets;
+    std::vector<cl_uint> createOffsets(const std::vector<cl_uint>& length, const size_t size) {
+        std::vector<cl_uint> offsets;
         offsets.reserve(size);
         size_t tmp = 0;
 
@@ -62,71 +88,15 @@ class FlatPatterns {
             offsets.push_back(tmp);
             tmp += len;
         }
-
         return offsets;
     }
 
-    std::vector<size_t> createMatches(const size_t size) {
-        std::vector<size_t> matches;
+    std::vector<cl_uint> createMatches(const size_t size) {
+        std::vector<cl_uint> matches;
         matches.resize(size);
-
-        return matches;
-    }
-
- public:
-    void findMatches() {
-        for (size_t i = 0; i < patternsAmount_; ++i) {
-                std::string curPattern = patterns_.substr(offsets_[i], lengths_[i]);
-                matches_[i] = matchPatterns(string_, curPattern);
-            }
-    }
-
- private:
-    std::vector<size_t> createShiftTable(const std::string& patternData, const size_t patternSize) {
-        std::vector<size_t> table(DICT_SIZE, std::numeric_limits<size_t>::max());
-        auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
-
-        for (size_t i = 0; i < patternSize; ++i)
-            table[pattern[i]] = patternSize - 1 - i;
-
-        return table;
-    }
-
-    size_t matchPatterns(const std::string& stringData, const std::string& patternData) {
-        size_t stringSize = stringData.size();
-        size_t patternSize = patternData.size();
-
-        if (patternSize > stringSize)
-            return 0;
-
-        std::vector<size_t> table = createShiftTable(patternData, patternSize);
-        size_t matches = 0;
-
-        auto string = reinterpret_cast<const unsigned char*>(stringData.data());
-        auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
-
-        for (size_t shift = 0; shift <= (stringSize - patternSize); ) {
-            size_t j = patternSize - 1;
-            for (; j != std::numeric_limits<size_t>::max() && pattern[j] == string[shift + j]; --j) {}
-
-            if (j == std::numeric_limits<size_t>::max()) {
-                matches++;
-                if (shift + patternSize < stringSize) {
-                    size_t followingChar = string[shift + patternSize];
-                    shift += patternSize - table[followingChar];
-                } else {
-                    shift += 1;
-                }
-            }
-            else {
-                size_t followingChar = table[string[shift + j]];
-                shift += std::max(1ul, j - followingChar);
-            }
-        }
         return matches;
     }
 };
-
 
 inline std::ostream& operator<<(std::ostream& outStream, const match::FlatPatterns& patterns) {
     size_t size = patterns.getAmount();
@@ -137,4 +107,15 @@ inline std::ostream& operator<<(std::ostream& outStream, const match::FlatPatter
 
     return outStream;
 }
-} // namespace pattern
+
+namespace cpu {
+void findMatchesCPU(FlatPatterns&, const std::string&);
+size_t matchPatterns(const std::string&, const std::string&);
+} // namespace cpu
+
+namespace gpu {
+void findMatchesGPU(const ocl_utils::Kernel_Names&, FlatPatterns&, const std::string&);
+void naiveMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
+void fastMatching(ocl_utils::Environment&, FlatPatterns&);
+} // namespace gpu
+} // namespace match
