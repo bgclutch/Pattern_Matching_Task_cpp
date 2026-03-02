@@ -3,6 +3,7 @@ project(pattern_matching)
 find_package(OpenCL REQUIRED)
 
 add_subdirectory(pattern_matching)
+add_subdirectory(tests)
 
 option(ENABLE_ASAN OFF)
 option(ENABLE_BENCHMARK OFF)

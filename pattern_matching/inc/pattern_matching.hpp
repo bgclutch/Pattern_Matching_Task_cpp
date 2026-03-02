@@ -29,10 +29,6 @@ class FlatPatterns {
         offsets_{createOffsets(lengths_, patternsAmount_)},
         matches_{createMatches(patternsAmount_)} {}
 
-    std::vector<cl_uint> getMatchesData() noexcept {
-        return matches_;
-    }
-
     const std::vector<cl_uint>& getMatches() const noexcept {
         return matches_;
     }
