@@ -7,12 +7,12 @@
 #include <limits>
 #include <CL/opencl.hpp>
 
+namespace match {
 namespace detail {
 std::vector<cl_uint> createShiftTable(const std::string&, const size_t);
 } // namespace detail
 
-namespace match {
-class FlatPatterns {
+class FlatPatterns final {
  private:
     std::string patterns_;
     size_t patternsAmount_;

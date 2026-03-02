@@ -2,6 +2,8 @@
 #include "config.hpp"
 #include "utils.hpp"
 
+
+namespace match {
 namespace detail {
 std::vector<cl_uint> createShiftTable(const std::string& patternData, const size_t patternSize) {
     std::vector<cl_uint> table(match::DICT_SIZE, std::numeric_limits<cl_uint>::max());
@@ -14,7 +16,6 @@ std::vector<cl_uint> createShiftTable(const std::string& patternData, const size
 }
 } // namespace detail
 
-namespace match {
 namespace cpu {
 void findMatchesCPU(FlatPatterns& patternSoA, const std::string& string) {
     auto offsets = patternSoA.getOffsets();
