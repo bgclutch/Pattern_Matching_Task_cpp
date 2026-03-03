@@ -21,18 +21,17 @@ TEST(NaiveGpu, first_test) {
 }
 
 TEST(NaiveGpu, second_test) {
-    cl_uint size = 20;
-    std::string str = "SnnPyX,?T&/'*:j`Mn}s";
+    cl_uint size = 100;
+    std::string str = "9ngqSi5LxnifvvDaxLUjdqzajlgfkeCeAns7MqjVpVxsl5QnV9Fr7BLNv2ih0LUqNmEvLUpsUnOnEFdTufY0RcXtoKA465DcLUj6";
     size_t patternsAmount = 5;
-    std::vector<cl_uint> lengths{3, 5, 2, 10, 1};
-    std::vector<std::string> patterns{"42!", "SnnPyl", "{s", "X,?T&/'*:j", "n"};
+    std::vector<cl_uint> lengths{3, 3, 2, 6, 1};
+    std::vector<std::string> patterns{"42!", "Ans", "LU", "MqjVpV", "v"};
     match::FlatPatterns patternsSoA(patterns, lengths, patternsAmount);
 
     match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::naive, patternsSoA, str);
     auto matches = patternsSoA.getMatches();
-    std::cerr << patternsSoA;
 
-    ASSERT_EQ(matches[4], 3);
+    ASSERT_EQ(matches[2], 4);
 }
 
 TEST(NaiveGpu, third_test) {
@@ -64,17 +63,17 @@ TEST(FastGpu, first_test) {
 }
 
 TEST(FastGpu, second_test) {
-    cl_uint size = 20;
-    std::string str = "Sz!PyX,?T&/'*:j`Mn}s";
-    size_t patternsAmount = 3;
-    std::vector<cl_uint> lengths{3, 5, 2, 10, 1};
-    std::vector<std::string> patterns{"42!", "Sz!Pyl", "{s", "X,?T&/'*:j", "n"};
+    cl_uint size = 100;
+    std::string str = "K2YcvliDn6v8bDHtMd9lln3NVCaOnNMyG9avKo28dphyvjs7eHMk1cvlP4L5XFJ5ct3dGMLq5zDi6tPbVuD8KM6WKeaaLAbnrAKd";
+    size_t patternsAmount = 5;
+    std::vector<cl_uint> lengths{3, 9, 3, 4, 1};
+    std::vector<std::string> patterns{"42!", "eHMk1cvlP", "cvl", "js7e", "l"};
     match::FlatPatterns patternsSoA(patterns, lengths, patternsAmount);
 
     match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::fast, patternsSoA, str);
     auto matches = patternsSoA.getMatches();
 
-    ASSERT_EQ(matches[4], 1);
+    ASSERT_EQ(matches[4], 4);
 }
 
 TEST(FastGpu, third_test) {
