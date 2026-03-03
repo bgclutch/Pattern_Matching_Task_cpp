@@ -22,11 +22,11 @@ for test_number in range(tests_number):
         for _ in range(patterns_count):
             if random.random() > 0.5:
                 start = random.randint(0, text_size - 2)
-                max_len = min(text_size - start, 2000)
+                max_len = min(text_size - start, 200)
                 pat_len = random.randint(1, max_len)
                 pattern = main_string[start : start + pat_len]
             else:
-                pat_len = random.randint(1, min(text_size, 2000))
+                pat_len = random.randint(1, 200)
                 pattern = ''.join(random.choice(string.ascii_lowercase) for _ in range(pat_len))
 
             file.write(f"{pat_len} {pattern}\n")

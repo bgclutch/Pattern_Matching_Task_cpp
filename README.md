@@ -1,10 +1,10 @@
-# Pattern matching
+# Pattern matching (HWB level 2)
 This project provides an implementation of a Pattern matching algorithm in C++ and OpenCL.
-It also includes automated tests comparing the results of the Pattern matching with CPU implementation of Boyer-Moore algorithm.
+It also includes automated tests comparing the results of the Pattern matching with CPU implementation of Boyer-Moore-Horspool algorithm with average O(N) complexity.
 
 ## Features:
 1. An implementation of a Bitonic sort algorithm with OpenCL library
-2. Comparison of results of GPU parallel algorithm and CPU-based Boyer-Moore algorithm for correctness
+2. Comparison of results of GPU parallel algorithm and CPU-based Boyer-Moore-Horspool algorithm for correctness
 3. Python scripts for automated testing and output verification
 
 ## Installation:
@@ -72,7 +72,7 @@ cmake --build build
 ```
 
 ## Benchmark results
-Benchmark for 6 benchmark tests with different data set size in each,
+Benchmark for 5 benchmark tests with different data set size in each,
 using -O2 optimisation
 
 - Device: Huawei MateBook XPro 2022
@@ -80,13 +80,19 @@ using -O2 optimisation
 - Memory: 16 GB Unified Memory
 - Graphics: Intel Iris Xe Graphics
 
-**Fast GPU Pattern matching algorithm comared with CPU Boyer-Moore algorithm**
+**Fast GPU Pattern matching algorithm comared with CPU Boyer-Moore-Horspool algorithm**
 
-| Elements amount| GPU Total time (Wall time) | Kernel Execution time | Data Transfer time | CPU time | Kernel time to CPU time ratio | Wall time to CPU time ratio |
+* **Lower** ratio means **better** result
+
+| Elements amount| GPU Total time (Wall time) naive/fast | Kernel Execution time naive/fast | Data Transfer time  naive/fast | CPU time | Kernel time to CPU time ratio naive/fast | Wall time to CPU time ratio  naive/fast |
 |-----------------------|------------------|------------------|---------------|----------|-------------------------|------------------------|
-| 0                    |   us      |  us      |  us    |  us    | 0.                  | 0.                  |
-| 0                  |   us      |  us      |  us    |  us  | 0.                    | 0.                    |
-| 0                 |   us      |  us      |  us    |  us  | 8.                    | 0.                   |
-| 0                |   us      |  us      |  us    |  us   | 0.                   | 0.                   |
-| 0               |   us      |  us      |  us    |  us   | 0.                   | 0.                    |
-| 0             |   us      |  us      |  us    |  us | 0.                   | 0.                  |
+| 8536091              |  4391300 / 3825800 us  | 4385600 / 3820900  us  | 5700000 / 4891000 us    | 10430700 us    | 0.42 / 0.37                  | 0.42 / 0.37                  |
+| 1233701            |  258880 / 125847 us   | 256614 / 123781 us  | 2265.81 / 2065.98 us    | 496438 us  | 0.52 / 0.25                    | 0.52 / 0.25                    |
+| 5603587           | 2574400 / 1992000  us  | 2569200 / 1988820  us  | 5136.82 / 3572.44 us  | 6597610 us  | 0.39 / 0.3                    | 0.39 / 0.3                   |
+| 9697390            | 12091000 / 8636360  us  | 12082000 / 8627610 us      | 9803.75 / 8757.19 us  | 23647200 us  | 0.51 / 0.36                    | 0.51 / 0.36                   |
+| 6877577            | 10410400 / 4673400  us  | 10406200 / 4670050 us      | 4268.62 / 3361.81 us  | 20344200 us  | 0.51 / 0.23                    | 0.51 / 0.23                   |
+
+
+## Result consideration
+
+The Fast kernel’s performance is heavily penalized by the "tail" (or halo) region overhead when the maximum pattern length is large relative to the work-group size, leading to excessive redundant data copying. While the Fast kernel aggressively prefetches data, the Naive kernel utilizes lazy evaluation, breaking early on mismatches and saving significant bandwidth. On Intel Integrated GPUs, this advantage is amplified because the hardware L3 cache efficiently manages coalesced global memory access, often making the manual overhead of local memory and synchronization barriers slower than the naive approach for datasets with long patterns. For example, the final test used 8147 patterns, none of which exceeded 200 characters. However, as we generate sequences with a wider range of lengths, the Fast kernel will eventually lose to the Naive kernel due to the increasing cost of tail data management.

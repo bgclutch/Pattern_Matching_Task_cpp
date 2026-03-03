@@ -26,7 +26,8 @@ __kernel void fast_pattern_kernel(__global const char* text, uint text_size, __c
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (global_id >= text_size) return;
+    if (global_id >= text_size)
+        return;
 
     for (uint i = 0; i < patterns_count; ++i) {
         int pattern_len = lengths[i];
@@ -42,7 +43,7 @@ __kernel void fast_pattern_kernel(__global const char* text, uint text_size, __c
 
         bool match = true;
 
-        for (int j = 0; j < pattern_len; ++j) {
+        for (int j = 1; j < pattern_len; ++j) {
             if (local_text[local_id + j] != patterns[pattern_offset + j]) {
                 match = false;
                 break;
