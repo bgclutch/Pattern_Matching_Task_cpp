@@ -10,7 +10,7 @@ tests_number = 10
 for test_number in range(tests_number):
     name_of_file = os.path.join(path, f"test_{test_number + 1:02}.in")
 
-    text_size = random.randint(10000, 100000)
+    text_size = random.randint(100000, 1000000)
     main_string = ''.join(random.choice(string.ascii_lowercase) for _ in range(text_size))
 
     with open(name_of_file, 'w') as file:

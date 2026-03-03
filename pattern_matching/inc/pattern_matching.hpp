@@ -105,13 +105,17 @@ inline std::ostream& operator<<(std::ostream& outStream, const match::FlatPatter
 }
 
 namespace cpu {
-void findMatchesCPU(FlatPatterns&, const std::string&);
+benchmark::BenchTimes findMatchesCPU(FlatPatterns&, const std::string&);
+namespace detail {
 size_t matchPatterns(const std::string&, const std::string&);
+} // namespace cpu::detail
 } // namespace cpu
 
 namespace gpu {
-void findMatchesGPU(const ocl_utils::Kernel_Names&, FlatPatterns&, const std::string&);
-void naiveMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
-void fastMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
+benchmark::BenchTimes findMatchesGPU(const ocl_utils::Kernel_Names&, FlatPatterns&, const std::string&);
+namespace detail {
+benchmark::BenchTimes naiveMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
+benchmark::BenchTimes fastMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
+} // namespace gpu::detail
 } // namespace gpu
 } // namespace match

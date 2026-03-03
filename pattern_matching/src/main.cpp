@@ -43,10 +43,20 @@ int main() {
         }
     }
 
-    match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
-    match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::fast, patternSoA, data);
-
-    std::cout << patternSoA;
+    try {
+        match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
+        match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::fast, patternSoA, data);
+        std::cout << patternSoA;
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Standard Error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    } catch (const std::exception& e) {
+        std::cerr << "Critical error: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << "Unknown critical error!" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
