@@ -9,7 +9,7 @@
 
 namespace match {
 namespace detail {
-std::vector<cl_uint> createShiftTable(const std::string&, const size_t);
+std::vector<size_t> createShiftTable(const std::string&, const size_t);
 } // namespace detail
 
 class FlatPatterns final {

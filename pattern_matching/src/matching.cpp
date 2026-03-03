@@ -5,11 +5,11 @@
 
 namespace match {
 namespace detail {
-std::vector<cl_uint> createShiftTable(const std::string& patternData, const size_t patternSize) {
-    std::vector<cl_uint> table(match::DICT_SIZE, std::numeric_limits<cl_uint>::max());
+std::vector<size_t> createShiftTable(const std::string& patternData, const size_t patternSize) {
+    std::vector<size_t> table(match::DICT_SIZE, patternSize);
     auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
 
-    for (size_t i = 0; i < patternSize; ++i)
+    for (size_t i = 0; i < patternSize - 1; ++i)
         table[pattern[i]] = patternSize - 1 - i;
 
     return table;
@@ -44,32 +44,28 @@ size_t matchPatterns(const std::string& stringData, const std::string& patternDa
     size_t stringSize = stringData.size();
     size_t patternSize = patternData.size();
 
-    if (patternSize > stringSize)
+    if (patternSize > stringSize || patternSize == 0)
         return 0;
 
-    std::vector<cl_uint> table = match::detail::createShiftTable(patternData, patternSize);
+    std::vector<size_t> table = match::detail::createShiftTable(patternData, patternSize);
     size_t matches = 0;
 
-    auto string = reinterpret_cast<const unsigned char*>(stringData.data());
+    auto text = reinterpret_cast<const unsigned char*>(stringData.data());
     auto pattern = reinterpret_cast<const unsigned char*>(patternData.data());
 
-    for (size_t shift = 0; shift <= (stringSize - patternSize); ) {
+    size_t shift = 0;
+    while (shift <= (stringSize - patternSize)) {
         size_t j = patternSize - 1;
-        for (; j != std::numeric_limits<cl_uint>::max() && pattern[j] == string[shift + j]; --j) {}
 
-        if (j == std::numeric_limits<cl_uint>::max()) {
+        while (j < patternSize && pattern[j] == text[shift + j]) {
+            --j;
+        }
+
+        if (j >= patternSize) {
             matches++;
-            if (shift + patternSize < stringSize) {
-                size_t followingChar = string[shift + patternSize];
-                shift += patternSize - table[followingChar];
-            } else {
-                shift += 1;
-            }
         }
-        else {
-            size_t followingChar = table[string[shift + j]];
-            shift += std::max(1ul, j - followingChar);
-        }
+
+        shift += table[text[shift + patternSize - 1]];
     }
     return matches;
 }

@@ -16,7 +16,7 @@ for test_number in range(tests_number):
     with open(name_of_file, 'w') as file:
         file.write(f"{text_size} {main_string}\n")
 
-        patterns_count = random.randint(100, 1000)
+        patterns_count = random.randint(1000, 10000)
         file.write(f"{patterns_count}\n")
 
         for _ in range(patterns_count):
