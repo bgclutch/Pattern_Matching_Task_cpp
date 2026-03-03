@@ -44,7 +44,7 @@ int main() {
     }
 
     match::FlatPatterns patternSoA(patterns, lengths, patternsCount);
-    match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::naive, patternSoA, data);
+    match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::fast, patternSoA, data);
 
     std::cout << patternSoA;
 

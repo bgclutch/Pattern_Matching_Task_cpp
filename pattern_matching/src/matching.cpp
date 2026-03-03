@@ -27,6 +27,7 @@ void findMatchesCPU(FlatPatterns& patternSoA, const std::string& string) {
             std::string curPattern = patterns.substr(offsets[i], lengths[i]);
             matches[i] = matchPatterns(string, curPattern);
         }
+    patternSoA.setMatches(std::move(matches));
 }
 
 size_t matchPatterns(const std::string& stringData, const std::string& patternData) {
@@ -72,7 +73,7 @@ void findMatchesGPU(const ocl_utils::Kernel_Names& currentKernel, FlatPatterns& 
     }
     else if (currentKernel == ocl_utils::Kernel_Names::fast) {
         ocl_utils::Environment env(config::KERNELS_PATH + config::FAST_PATTERN_KERNEL, config::FAST_PATTERN_KERNEL_NAME);
-        fastMatching(env,patternSoA);
+        fastMatching(env, patternSoA, string);
     }
     else {
         throw std::runtime_error("no kernel");
@@ -82,7 +83,7 @@ void findMatchesGPU(const ocl_utils::Kernel_Names& currentKernel, FlatPatterns& 
 void naiveMatching(ocl_utils::Environment& env, FlatPatterns& patternSoA, const std::string& string) {
     size_t stringLen = string.size();
     size_t amount = patternSoA.getAmount();
-    cl::Context curContext = env.get_context();
+    cl::Context& curContext = env.get_context();
 
     cl::Buffer string_buf   = ocl_utils::createBuffer(curContext, string);
     cl::Buffer patterns_buf = ocl_utils::createBuffer(curContext, patternSoA.getPatterns());
@@ -111,8 +112,51 @@ void naiveMatching(ocl_utils::Environment& env, FlatPatterns& patternSoA, const 
     patternSoA.setMatches(std::move(tmpMatches));
 }
 
-void fastMatching(ocl_utils::Environment& env, FlatPatterns& patternSoA) {
+void fastMatching(ocl_utils::Environment& env, match::FlatPatterns& patternSoA, const std::string& string) {
+    cl::Context& context = env.get_context();
+    size_t stringLen = string.size();
+    size_t amount = patternSoA.getAmount();
+    const auto& lengths = patternSoA.getLengths();
 
+    cl_uint maxPatternLen = 0;
+
+    for (auto len : lengths) {
+        if (len > maxPatternLen)
+            maxPatternLen = len;
+    }
+
+    cl_uint maxDeviceWorkItemSize  = env.get_device().getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+    cl_uint maxKernelWorkItemSize = env.get_kernel().getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(env.get_device());
+    cl_uint localSize = std::min(maxDeviceWorkItemSize, maxKernelWorkItemSize);
+
+    size_t globalSize = ((stringLen + localSize - 1) / localSize) * localSize;
+
+    cl::Buffer string_buf   = ocl_utils::createBuffer(context, string);
+    cl::Buffer patterns_buf = ocl_utils::createBuffer(context, patternSoA.getPatterns());
+    cl::Buffer lengths_buf  = ocl_utils::createBuffer(context, lengths);
+    cl::Buffer offsets_buf  = ocl_utils::createBuffer(context, patternSoA.getOffsets());
+
+    std::vector<cl_uint> tmpMatches(amount, 0);
+    auto matches_buf  = ocl_utils::createBuffer(context, tmpMatches);
+
+    auto fastCall = cl::KernelFunctor<cl::Buffer, cl_uint,
+                                      cl::Buffer, cl_uint,
+                                      cl::Buffer, cl::Buffer, cl::Buffer,
+                                      cl::LocalSpaceArg, cl_uint>(env.get_kernel());
+
+    size_t local_mem_size = (localSize + maxPatternLen) * sizeof(char);
+
+    fastCall(cl::EnqueueArgs(env.get_queue(), cl::NDRange(globalSize), cl::NDRange(localSize)),
+            string_buf, stringLen,
+            patterns_buf, amount,
+            lengths_buf, offsets_buf, matches_buf,
+            cl::Local(local_mem_size),
+            (cl_uint)maxPatternLen
+    );
+
+    size_t bytes = amount * sizeof(cl_int);
+    env.get_queue().enqueueReadBuffer(matches_buf, CL_TRUE, 0, bytes, tmpMatches.data());
+    patternSoA.setMatches(std::move(tmpMatches));
 }
 } // namespace gpu
 } // namespace match

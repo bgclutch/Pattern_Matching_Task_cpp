@@ -112,6 +112,6 @@ size_t matchPatterns(const std::string&, const std::string&);
 namespace gpu {
 void findMatchesGPU(const ocl_utils::Kernel_Names&, FlatPatterns&, const std::string&);
 void naiveMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
-void fastMatching(ocl_utils::Environment&, FlatPatterns&);
+void fastMatching(ocl_utils::Environment&, FlatPatterns&, const std::string&);
 } // namespace gpu
 } // namespace match
