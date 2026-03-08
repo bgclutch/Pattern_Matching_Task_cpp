@@ -1,4 +1,3 @@
-find_package(GTest REQUIRED)
 find_package(OpenCL REQUIRED)
 
 add_executable(tests
