@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(pattern_matching)
+
+include(cmake/Dependencies.cmake)
 find_package(OpenCL REQUIRED)
 
 add_subdirectory(pattern_matching)

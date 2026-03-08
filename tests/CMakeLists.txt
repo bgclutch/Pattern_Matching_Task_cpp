@@ -24,8 +24,7 @@ target_include_directories(tests PRIVATE
 )
 
 target_link_libraries(tests PRIVATE
-    GTest::gtest
-    GTest::gtest_main
+    gtest_main
     OpenCL::OpenCL
 )
 
