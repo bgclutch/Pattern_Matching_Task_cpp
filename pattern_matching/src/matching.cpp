@@ -99,7 +99,7 @@ benchmark::BenchTimes naiveMatching(ocl_utils::Environment& env, FlatPatterns& p
     size_t bytes = amount * sizeof(cl_uint);
 
     benchmark::BenchTimes result{};
-    auto matchCall = cl::KernelFunctor<cl::Buffer, uint, cl::Buffer, uint,
+    auto matchCall = cl::KernelFunctor<cl::Buffer, cl_uint, cl::Buffer, cl_uint,
                                        cl::Buffer, cl::Buffer, cl::Buffer>(env.get_kernel());
 
     auto wall_begin = std::chrono::high_resolution_clock::now();
