@@ -17,25 +17,17 @@ std::vector<size_t> createShiftTable(const std::string& patternData, const size_
 } // namespace detail
 
 namespace cpu {
-benchmark::BenchTimes findMatchesCPU(FlatPatterns& patternSoA, const std::string& string) {
-    auto offsets = patternSoA.getOffsets();
-    auto lengths = patternSoA.getLengths();
-    auto amount = patternSoA.getAmount();
-    auto patterns = patternSoA.getPatterns();
-    std::vector<cl_uint> matches(amount, 0);
-
+benchmark::BenchTimes findMatchesCPU(const ocl_utils::CPU_Names& CPUType, FlatPatterns& patternSoA, const std::string& string) {
     benchmark::BenchTimes result{};
-    auto begin = std::chrono::high_resolution_clock::now();
-
-    for (size_t i = 0; i < amount; ++i) {
-            std::string curPattern = patterns.substr(offsets[i], lengths[i]);
-            matches[i] = detail::matchPatterns(string, curPattern);
-        }
-    patternSoA.setMatches(std::move(matches));
-
-    auto end = std::chrono::high_resolution_clock::now();
-    result.CPUTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-
+    if (CPUType == ocl_utils::CPU_Names::naive) {
+        result = detail::naiveMatching(patternSoA, string);
+    }
+    else if (CPUType == ocl_utils::CPU_Names::fast) {
+        result = detail::fastMatching(patternSoA, string);
+    }
+    else {
+        throw std::runtime_error("no right CPU version");
+    }
     return result;
 }
 
@@ -68,6 +60,67 @@ size_t matchPatterns(const std::string& stringData, const std::string& patternDa
         shift += table[text[shift + patternSize - 1]];
     }
     return matches;
+}
+benchmark::BenchTimes naiveMatching(FlatPatterns& patternSoA, const std::string& string) {
+    benchmark::BenchTimes result{};
+    auto begin = std::chrono::high_resolution_clock::now();
+
+    size_t stringLen = string.size();
+    size_t amount = patternSoA.getAmount();
+    auto offsets = patternSoA.getOffsets();
+    auto lengths = patternSoA.getLengths();
+    auto patStr = patternSoA.getPatterns();
+
+    std::vector<cl_uint> matches(amount, 0);
+
+    for (size_t i = 0; i != stringLen; ++i) {
+        for (size_t p = 0; p != amount; ++p) {
+            size_t len = lengths[p];
+            size_t offset = offsets[p];
+
+            if (i + len > stringLen)
+                continue;
+
+            bool isMatch = true;
+            for (size_t j = 0; j != len; ++j) {
+                if (string[i + j] != patStr[offset + j]) {
+                    isMatch = false;
+                    break;
+                }
+            }
+
+            if (isMatch) {
+                ++matches[p];
+            }
+        }
+    }
+
+    patternSoA.setMatches(std::move(matches));
+    auto end = std::chrono::high_resolution_clock::now();
+    result.CPUTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+    return result;
+}
+
+benchmark::BenchTimes fastMatching(FlatPatterns& patternSoA, const std::string& string) {
+    auto offsets = patternSoA.getOffsets();
+    auto lengths = patternSoA.getLengths();
+    auto amount = patternSoA.getAmount();
+    auto patterns = patternSoA.getPatterns();
+    std::vector<cl_uint> matches(amount, 0);
+
+    benchmark::BenchTimes result{};
+    auto begin = std::chrono::high_resolution_clock::now();
+
+    for (size_t i = 0; i < amount; ++i) {
+            std::string curPattern = patterns.substr(offsets[i], lengths[i]);
+            matches[i] = detail::matchPatterns(string, curPattern);
+    }
+    patternSoA.setMatches(std::move(matches));
+
+    auto end = std::chrono::high_resolution_clock::now();
+    result.CPUTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+
+    return result;
 }
 } // namespace cpu::detail
 } // namespace cpu

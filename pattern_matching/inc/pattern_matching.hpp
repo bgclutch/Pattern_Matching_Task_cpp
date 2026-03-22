@@ -105,9 +105,11 @@ inline std::ostream& operator<<(std::ostream& outStream, const match::FlatPatter
 }
 
 namespace cpu {
-benchmark::BenchTimes findMatchesCPU(FlatPatterns&, const std::string&);
+benchmark::BenchTimes findMatchesCPU(const ocl_utils::CPU_Names&, FlatPatterns&, const std::string&);
 namespace detail {
 size_t matchPatterns(const std::string&, const std::string&);
+benchmark::BenchTimes naiveMatching(FlatPatterns&, const std::string&);
+benchmark::BenchTimes fastMatching(FlatPatterns&, const std::string&);
 } // namespace cpu::detail
 } // namespace cpu
 

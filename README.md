@@ -92,6 +92,18 @@ using -O2 optimisation
 | 9697390            | 12091000 / 8636360  us  | 12082000 / 8627610 us      | 9803.75 / 8757.19 us  | 23647200 us  | 0.51 / 0.36                    | 0.51 / 0.36                   |
 | 6877577            | 10410400 / 4673400  us  | 10406200 / 4670050 us      | 4268.62 / 3361.81 us  | 20344200 us  | 0.51 / 0.23                    | 0.51 / 0.23                   |
 
+**Naive GPU Pattern matching algorithm comared with Naive CPU algorithm**
+
+* **Lower** ratio means **better** result
+
+| Elements amount| GPU Total time (Wall time) naive/fast | Kernel Execution time naive/fast | Data Transfer time  naive/fast | CPU time | Kernel time to CPU time ratio naive/fast | Wall time to CPU time ratio  naive/fast |
+|-----------------------|------------------|------------------|---------------|----------|-------------------------|------------------------|
+| 8536091              |  4391300 / 3825800 us  | 4385600 / 3820900  us  | 5700000 / 4891000 us    | 10430700 us    | 0.42 / 0.37                  | 0.42 / 0.37                  |
+| 1233701            |  258880 / 125847 us   | 256614 / 123781 us  | 2265.81 / 2065.98 us    | 496438 us  | 0.52 / 0.25                    | 0.52 / 0.25                    |
+| 5603587           | 2574400 / 1992000  us  | 2569200 / 1988820  us  | 5136.82 / 3572.44 us  | 6597610 us  | 0.39 / 0.3                    | 0.39 / 0.3                   |
+| 9697390            | 12091000 / 8636360  us  | 12082000 / 8627610 us      | 9803.75 / 8757.19 us  | 23647200 us  | 0.51 / 0.36                    | 0.51 / 0.36                   |
+| 6877577            | 10410400 / 4673400  us  | 10406200 / 4670050 us      | 4268.62 / 3361.81 us  | 20344200 us  | 0.51 / 0.23                    | 0.51 / 0.23                   |
+
 
 ## Result consideration
 

@@ -30,20 +30,25 @@ int main(int argc, char** argv) {
 
     try {
 //-------------------------------naive kernel benchmark--------------------------------------//
-    benchmark::BenchDataSet naiveData = dataSet;
-    benchmark::BenchTimes resultNaive = benchmark::runMatching(benchmark::DEVICE_TYPE::NAIVEGPU, naiveData);
-    benchmark::printRes("naive GPU", resultNaive);
+    benchmark::BenchDataSet naiveGPUData = dataSet;
+    benchmark::BenchTimes resultNaiveGPU = benchmark::runMatching(benchmark::DEVICE_TYPE::NAIVEGPU, naiveGPUData);
+    benchmark::printRes("naive GPU", resultNaiveGPU);
 
 //-------------------------------fast kernel benchmark---------------------------------------//
-    benchmark::BenchDataSet fastData = dataSet;
-    benchmark::BenchTimes resultFast = benchmark::runMatching(benchmark::DEVICE_TYPE::FASTGPU, fastData);
-    benchmark::printRes("fast GPU", resultFast);
+    benchmark::BenchDataSet fastGPUData = dataSet;
+    benchmark::BenchTimes resultFastGPU = benchmark::runMatching(benchmark::DEVICE_TYPE::FASTGPU, fastGPUData);
+    benchmark::printRes("fast GPU", resultFastGPU);
 
-//-------------------------------cpu matching benchmark--------------------------------------//
-    benchmark::BenchDataSet data = dataSet;
-    benchmark::BenchTimes resultCPU = benchmark::runMatching(benchmark::DEVICE_TYPE::CPU, data);
-    benchmark::printRes("matching CPU", resultCPU);
-    } catch (const std::runtime_error& e) {
+//-------------------------------naive cpu matching benchmark--------------------------------//
+    benchmark::BenchDataSet naiveCPUData = dataSet;
+    benchmark::BenchTimes resultNaiveCPU = benchmark::runMatching(benchmark::DEVICE_TYPE::NAIVECPU, naiveCPUData);
+    benchmark::printRes("Naive CPU", resultNaiveCPU);
+
+//-------------------------------fast cpu matching benchmark---------------------------------//
+    benchmark::BenchDataSet fastCPUData = dataSet;
+    benchmark::BenchTimes resultFastCPU = benchmark::runMatching(benchmark::DEVICE_TYPE::FASTCPU, fastCPUData);
+    benchmark::printRes("Fast CPU", resultFastCPU);
+   } catch (const std::runtime_error& e) {
         std::cerr << "Standard Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     } catch (const std::exception& e) {
@@ -103,8 +108,16 @@ benchmark::BenchDataSet getBenchmarkData(std::istream& input_data) {
 benchmark::BenchTimes runMatching(DEVICE_TYPE deviceType, benchmark::BenchDataSet& dataSet) {
     benchmark::BenchTimes result{};
 
-    if (deviceType == DEVICE_TYPE::CPU) {
-        result = match::cpu::findMatchesCPU(dataSet.patterns, dataSet.data);
+    if (deviceType == DEVICE_TYPE::NAIVECPU || deviceType == DEVICE_TYPE::FASTCPU) {
+        if (deviceType == DEVICE_TYPE::NAIVECPU) {
+            result = match::cpu::findMatchesCPU(ocl_utils::CPU_Names::naive, dataSet.patterns, dataSet.data);
+        }
+        else if (deviceType == DEVICE_TYPE::FASTCPU) {
+            result = match::cpu::findMatchesCPU(ocl_utils::CPU_Names::fast, dataSet.patterns, dataSet.data);
+        }
+        else {
+            throw std::runtime_error("wrong GPU matcher called");
+        }
     }
     else {
         if (deviceType == DEVICE_TYPE::NAIVEGPU) {
@@ -114,7 +127,7 @@ benchmark::BenchTimes runMatching(DEVICE_TYPE deviceType, benchmark::BenchDataSe
             result = match::gpu::findMatchesGPU(ocl_utils::Kernel_Names::fast, dataSet.patterns, dataSet.data);
         }
         else {
-            throw std::runtime_error("wrong matcher called");
+            throw std::runtime_error("wrong GPU matcher called");
         }
     }
     return result;

@@ -10,7 +10,8 @@
 
 namespace benchmark {
 enum class DEVICE_TYPE {
-    CPU,
+    NAIVECPU,
+    FASTCPU,
     NAIVEGPU,
     FASTGPU
 };
@@ -28,6 +29,7 @@ void printRes(const std::string& nameRes, const BenchTimes& res) {
               << "Transfer time: " << res.TransferTime.count() / 1000. << " us\n}\n";
 }
 
-benchmark::BenchDataSet getBenchmarkData(std::istream& input_data);
-benchmark::BenchTimes runMatching(DEVICE_TYPE deviceType, benchmark::BenchDataSet& dataSet);
+benchmark::BenchDataSet getBenchmarkData(std::istream&);
+benchmark::BenchTimes runMatching(DEVICE_TYPE, benchmark::BenchDataSet&);
+bool verifyResults(const std::vector<cl_uint>&, const std::vector<cl_uint>&);
 } // namespace benchmark

@@ -27,6 +27,11 @@ enum class Kernel_Names {
     fast
 };
 
+enum class CPU_Names {
+    naive,
+    fast
+};
+
 class Environment final {
  private:
     cl::Platform platform_;
