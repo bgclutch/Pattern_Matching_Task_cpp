@@ -86,7 +86,7 @@ using -O2 optimisation
 
 | Elements amount| GPU Total time (Wall time) fast | Kernel Execution time fast | Data Transfer time fast | CPU time | Kernel time to CPU time ratio fast | Wall time to CPU time ratio fast |
 |-----------------------|------------------|------------------|---------------|----------|-------------------------|------------------------|
-| 8536091              |  3825800 us  | 3820900  us  |  4891000 us    | 10430700 us    | 0.37                  | 0.37                  |
+| 8536091              |  3825800 us  | 3820900  us  |  4891 us    | 10430700 us    | 0.37                  | 0.37                  |
 | 1233701            |  125847 us   | 123781 us  | 2065.98 us    | 496438 us  | 0.25                    | 0.25                    |
 | 5603587           | 1992000  us  | 1988820  us  | 3572.44 us  | 6597610 us  | 0.3                    | 0.3                   |
 | 9697390            | 8636360  us  |  8627610 us      | 8757.19 us  | 23647200 us  | 0.36                    | 0.36                   |
@@ -96,7 +96,7 @@ using -O2 optimisation
 
 * **Lower** ratio means **better** result
 
-| Elements amount| GPU Total time (Wall time) naive | Kernel Execution time naive | Data Transfer time naive | CPU time | Kernel time to CPU time ratio fast | Wall time to CPU time ratio fast |
+| Elements amount| GPU Total time (Wall time) naive | Kernel Execution time naive | Data Transfer time naive | CPU time | Kernel time to CPU time ratio naive | Wall time to CPU time ratio naive |
 |-----------------------|------------------|------------------|---------------|----------|---------------|----------|
 | 8536091              |  4391300 us  | 4385600 us  | 5700000 us    | 96266000 us   | 0.06                 | 0.05                |
 | 6877577           | 9344150 us  | 9342000 us  | 2151.61 us  | 82258700 us  | 0.11                  | 0.11                  |
